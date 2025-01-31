@@ -58,7 +58,7 @@ const TaskList = ({ tasks, deleteTask }) => {
   }
 
   return (
-    <ul className="list-none space-y-2">
+    <ul className="space-y-2">
       {tasks.map((task) => (
         <TaskItem
           key={task.id}
