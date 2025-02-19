@@ -1,86 +1,23 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from 'react';
 
 const Home = () => {
-  const [tasks, setTasks] = useState([]);
-  const [input, setInput] = useState("");
-  const userName = "jacksons";
-  const URL = `https://playground.4geeks.com/todo/`;
+  const [tasks, setTasks] = useState([]); 
+  const [input, setInput] = useState('');
 
-  useEffect(() => {
-    createUser();
-  }, []);
-
-  const createUser = async () => {
-    try {
-      const response = await fetch(URL + userName, { method: "PUT" });
-
-      if (!response.ok) {
-        if (response.status === 400) {
-          console.log("User already exists");
-        } else {
-          throw new Error("Failed to create user");
-        }
-      }
-
-      getTodos();
-    } catch (error) {
-      console.error("Error creating user:", error);
+  const addTask = () => {
+    if (input.trim()) {
+      setTasks([...tasks, { id: Date.now(), text: input }]);
+      setInput('');
     }
   };
 
-  const getTodos = async () => {
-    try {
-      const response = await fetch(URL + userName, { method: "GET" });
-      if (!response.ok) throw new Error("Failed to fetch todos");
-
-      const data = await response.json();
-      setTasks(data.todos);
-    } catch (error) {
-      console.error("Error fetching todos:", error);
-    }
-  };
-
-  const addTask = async () => {
-    if (!input.trim()) return;
-
-    const newTask = { label: input, done: false };
-    const updatedTasks = [...tasks, newTask];
-
-    try {
-      const response = await fetch(URL + userName, {
-        method: "POST",
-        body: JSON.stringify(updatedTasks),
-        headers: { "Content-Type": "application/json" },
-      });
-
-      if (!response.ok) throw new Error("Error updating tasks");
-      setTasks(updatedTasks);
-      setInput("");
-    } catch (error) {
-      console.error("Error adding task:", error);
-    }
-  };
-
-  const deleteTask = async (taskLabel) => {
-    const updatedTasks = tasks.filter((task) => task.label !== taskLabel);
-
-    try {
-      const response = await fetch(URL + userName, {
-        method: "DELETE",
-        body: JSON.stringify(updatedTasks),
-        headers: { "Content-Type": "application/json" },
-      });
-
-      if (!response.ok) throw new Error("Error deleting task");
-      setTasks(updatedTasks);
-    } catch (error) {
-      console.error("Error deleting task:", error);
-    }
+  const deleteTask = (id) => {
+    setTasks(tasks.filter((task) => task.id !== id));
   };
 
   return (
-    <div className="app p-4 mx-auto">
-      <h1 className="mb-4">To-Do List</h1>
+    <div className="app p-4 max-w-md mx-auto">
+      <h1 className="text-2xl font-bold mb-4">To-Do List</h1>
       <Input input={input} setInput={setInput} addTask={addTask} />
       <TaskList tasks={tasks} deleteTask={deleteTask} />
     </div>
@@ -88,17 +25,26 @@ const Home = () => {
 };
 
 const Input = ({ input, setInput, addTask }) => {
+  const enterPress = (e) => {
+    if (e.key === 'Enter') {
+      addTask();
+    }
+  };
+
   return (
     <div className="flex gap-2 mb-4">
       <input
         type="text"
         value={input}
         onChange={(e) => setInput(e.target.value)}
-        placeholder="Add a task"
-        className="border p-2 flex"
+        onKeyDown={enterPress}
+        placeholder="Add a task..."
+        aria-label="Task input"
+        className="border rounded p-2 flex-grow"
       />
       <button
         onClick={addTask}
+        aria-label="Add task"
         className="bg-blue-500 text-white px-4 py-2"
       >
         Add
@@ -108,22 +54,28 @@ const Input = ({ input, setInput, addTask }) => {
 };
 
 const TaskList = ({ tasks, deleteTask }) => {
-  return tasks.length === 0 ? (
-    <p className="text-gray-500">None</p>
-  ) : (
-    <ul className="space-y-2">
-      {tasks.map((task) => (
-        <TaskItem key={task.label} task={task} deleteTask={deleteTask} />
+  if (tasks.length === 0) {
+    return <p className="text-gray-500">No tasks</p>;
+  }
+
+  return (
+    <ul className="list-none space-y-2">
+      {tasks.map(({ id, text }) => (
+        <TaskItem key={id} id={id} text={text} deleteTask={deleteTask} />
       ))}
     </ul>
   );
 };
 
-const TaskItem = ({ task, deleteTask }) => {
+const TaskItem = ({ id, text, deleteTask }) => {
   return (
     <li className="flex justify-between items-center bg-gray-100 p-2">
-      <span>{task.label}</span>
-      <button onClick={() => deleteTask(task.label)} className="ms-3">
+      <span>{text}</span>
+      <button
+        onClick={() => deleteTask(id)}
+        aria-label="Delete task"
+        className="text-red-500"
+      >
         Delete
       </button>
     </li>
