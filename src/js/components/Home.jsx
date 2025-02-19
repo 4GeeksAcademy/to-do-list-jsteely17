@@ -4,7 +4,7 @@ const Home = () => {
   const [tasks, setTasks] = useState([]);
   const [input, setInput] = useState("");
   const userName = "jacksons";
-  const URL = `https://playground.4geeks.com/todo/todos/`;
+  const URL = `https://playground.4geeks.com/todo/`;
 
   useEffect(() => {
     createUser();
@@ -12,7 +12,7 @@ const Home = () => {
 
   const createUser = async () => {
     try {
-      const response = await fetch(URL + userName, { method: "POST" });
+      const response = await fetch(URL + userName, { method: "PUT" });
 
       if (!response.ok) {
         if (response.status === 400) {
@@ -48,7 +48,7 @@ const Home = () => {
 
     try {
       const response = await fetch(URL + userName, {
-        method: "PUT",
+        method: "POST",
         body: JSON.stringify(updatedTasks),
         headers: { "Content-Type": "application/json" },
       });
@@ -66,7 +66,7 @@ const Home = () => {
 
     try {
       const response = await fetch(URL + userName, {
-        method: "PUT",
+        method: "DELETE",
         body: JSON.stringify(updatedTasks),
         headers: { "Content-Type": "application/json" },
       });
